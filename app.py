@@ -351,7 +351,7 @@ if page == "profile":
     st.stop()
 
 if page == "add":
-    st.markdown('<div class="card"><h3 style="margin-top:0">➕ Add a friend</h3><p class="small">Type your friend’s username and tap Connect. Your chat opens immediately — no requests and no friend code.</p></div>', unsafe_allow_html=True)
+    st.markdown('<div class="card"><h3 style="margin-top:0">➕ Add a friend</h3><p class="small">Type your friend’s username and tap Chat. The chat opens immediately — no requests, accept/decline, or friend code.</p></div>', unsafe_allow_html=True)
     username_query = st.text_input(
         "Friend username",
         placeholder="e.g. ali123",
@@ -371,7 +371,7 @@ if page == "add":
             for p in matches:
                 c1, c2 = st.columns([3, 1])
                 c1.markdown(f"👤 **@{html.escape(p['username'])}**<br><span class='small'>{html.escape(p['name'])}</span>", unsafe_allow_html=True)
-                if c2.button("Connect 💕", key=f"chat_user_{p['id']}"):
+                if c2.button("Chat 💕", key=f"chat_user_{p['id']}"):
                     ok, result = connect_friend(my_db_id, p["username"])
                     if ok:
                         st.session_state.selected_friend = result["friend_id"]
@@ -387,7 +387,7 @@ if page == "add":
 
 # CHAT PAGE
 if not friends:
-    st.markdown('<div class="card"><h3 style="margin-top:0">💬 No friends yet</h3><p>Tap <b>➕ Add friend</b>, type your friend’s username, and tap <b>Connect 💕</b>. Your chat opens immediately.</p></div>', unsafe_allow_html=True)
+    st.markdown('<div class="card"><h3 style="margin-top:0">💬 No friends yet</h3><p>Tap <b>➕ Add friend</b>, type your friend’s username, and tap <b>Chat 💕</b>. Your chat opens immediately.</p></div>', unsafe_allow_html=True)
     st.stop()
 
 friend_codes = [f["code"] for f in friends]
