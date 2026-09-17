@@ -1,18 +1,23 @@
-# Friend Gup Shup — Real Friend Chat
+# Friend Gup Shup — Deployment Ready V5
 
-## Streamlit entry point
-Use `app.py` as the Main file path. The repository intentionally contains one Streamlit entry point: `app.py`.
+This version has **no backend.py import** and no `backend.configuration_error()` call.
 
-## Supabase
-1. Create a Supabase project.
-2. Run `supabase_schema.sql` in SQL Editor.
-3. In Streamlit Cloud → Manage app → Settings → Secrets, add:
+## Streamlit Cloud
+- Main file path: `app.py`
+- Python: 3.11 recommended
+- After replacing the GitHub files, use **Reboot app**.
+
+## Secrets
+Use the exact names below:
 
 ```toml
 SUPABASE_URL = "https://YOUR_PROJECT.supabase.co"
 SUPABASE_KEY = "YOUR_PUBLISHABLE_KEY"
 ```
 
-4. Reboot the app. Both friends use the same Supabase project.
+The app also accepts `SUPABASE_PUBLISHABLE_KEY` or `SUPABASE_ANON_KEY` as the key name.
 
-Do not commit real keys to GitHub.
+Do not put the real key in GitHub.
+
+## Supabase
+Run `supabase_schema.sql` once in the Supabase SQL Editor.
