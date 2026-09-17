@@ -1,24 +1,29 @@
-# Friend Gup Shup — EASY CHAT
+# 💬 Friend Gup Shup — EASY CHAT
 
-This version removes the visible 8-character Friend Code.
+This version is intentionally simple.
 
-## New flow
+## How it works
 
-1. Create your profile with a username.
-2. Tap **Add friend**.
-3. Search your friend's username.
-4. Tap **Chat**.
-5. The app connects and opens the chat automatically.
+1. Enter your name and username.
+2. Tap **Start chatting 💕**.
+3. Give your friend your username, for example `@asya123`.
+4. Your friend taps **Add friend**.
+5. They type `asya123`.
+6. They tap **Connect 💕**.
+7. The friendship is created for BOTH people automatically.
+8. The chat opens immediately.
 
-Example:
+### There are NO friend requests
 
-`@ali123` → **Add friend** → **Chat**
+No codes, no request/accept screen, and no manual database entries.
 
 ## Supabase
 
-Run the updated `supabase_schema.sql` once in the Supabase SQL Editor.
+Run `supabase_schema.sql` once in the Supabase SQL Editor.
 
-If your project already has `users_select`, the migration safely drops and recreates that policy. It also adds a `username` column and a unique username index.
+This simple version does not use Supabase Auth. Because of that, the SQL disables RLS on these demo tables so the Streamlit client can work with the publishable/anon key.
+
+For a truly private production chat, add Supabase Auth and user-based RLS later.
 
 ## Streamlit Secrets
 
@@ -26,8 +31,6 @@ If your project already has `users_select`, the migration safely drops and recre
 SUPABASE_URL = "https://YOUR_PROJECT.supabase.co"
 SUPABASE_KEY = "YOUR_PUBLISHABLE_KEY"
 ```
-
-You can also use `SUPABASE_PUBLISHABLE_KEY` or `SUPABASE_ANON_KEY`.
 
 ## Deploy
 
