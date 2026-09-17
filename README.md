@@ -1,32 +1,47 @@
-# Friend Gup Shup — Real Friend Chat
+# 💬 Friend Gup Shup — Real Friend Chat
 
-A Streamlit friend-to-friend chat app backed by Supabase. No AI replies are used.
+A simple **real person-to-person** chat app built with Streamlit + Supabase. There are no AI-generated replies.
 
-## 1. Supabase setup
+## Features
+- Real messages shared between different phones/browsers
+- 8-character Friend Code instead of exposing a long UUID
+- Adding a friend creates the connection for both people
+- Messages refresh automatically every 2 seconds
+- Responsive mobile-friendly interface
+- Message escaping and 2,000-character limit
+- Supabase database is the shared source of truth
 
-1. Create a Supabase project.
-2. Open **SQL Editor** and run `supabase_schema.sql` completely.
-3. Open **Settings → API Keys** and copy the **Project URL** and **Publishable key**. The older `anon` key also works.
+## Deploy on Streamlit Community Cloud
 
-## 2. Streamlit Secrets
+### 1. Create Supabase
+Create a Supabase project, open **SQL Editor**, and run `supabase_schema.sql`.
 
-In Streamlit Cloud: **Manage app → Settings → Secrets**:
+### 2. Add Streamlit Secrets
+In your Streamlit app open **Manage app → Settings → Secrets** and add:
 
 ```toml
 SUPABASE_URL = "https://YOUR_PROJECT.supabase.co"
-SUPABASE_KEY = "YOUR_PUBLISHABLE_OR_ANON_KEY"
+SUPABASE_KEY = "YOUR_SUPABASE_KEY"
 ```
 
-Never put a secret/service-role key in GitHub.
+Do **not** commit the real key to GitHub.
 
-## 3. Deploy
+### 3. Deploy
+Set the main file to:
 
-Put all files in the repository root and set the Streamlit entrypoint to `app.py`.
+```text
+app.py
+```
 
-## How chat works
+The app installs dependencies from `requirements.txt`.
 
-Each device gets a UUID stored in its Streamlit session. A user creates a display name and receives an 8-character Friend Code. Adding a friend creates a friendship in both directions. Messages are stored in the shared Supabase `messages` table and the UI polls every 2 seconds.
+## How two friends chat
+1. Person A opens the app and creates a name.
+2. The app displays an 8-character Friend Code.
+3. Person A sends that code to Person B.
+4. Person B creates their own name and enters Person A's code.
+5. Both accounts are connected automatically.
+6. Either person sends a message; the other browser sees it on the next refresh.
 
-### Important limitation
-
-This version is a simple prototype. The SQL policies intentionally allow the app's publishable/anon key to read/write these tables so the server-side Streamlit app can work without Supabase Auth. For a public production chat, add Supabase Auth and strict per-user Row Level Security before storing private conversations.
+### Important
+This is a lightweight prototype without full user authentication. For a public production messenger, add **Supabase Auth, strict Row Level Security, abuse reporting/blocking, rate limiting, message deletion/privacy controls, and server-side authorization**.
