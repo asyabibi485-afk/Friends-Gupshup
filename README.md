@@ -1,48 +1,47 @@
-# 💬 Friend Gup Shup — Real Chat
+# 💬 Friend Gup Shup — Real Friend Chat
 
-This version is a real person-to-person chat portal. It does **not** generate AI replies.
+A simple **real person-to-person** chat app built with Streamlit + Supabase. There are no AI-generated replies.
 
-## What changed
+## Features
+- Real messages shared between different phones/browsers
+- 8-character Friend Code instead of exposing a long UUID
+- Adding a friend creates the connection for both people
+- Messages refresh automatically every 2 seconds
+- Responsive mobile-friendly interface
+- Message escaping and 2,000-character limit
+- Supabase database is the shared source of truth
 
-- Messages are stored in a shared Supabase database.
-- Your friend can send a message from their own browser/device.
-- You can answer from your browser/device.
-- The chat refreshes automatically every 2 seconds.
-- No fake AI messages are inserted.
-- Friend IDs allow two users to connect in this simple demo.
+## Deploy on Streamlit Community Cloud
 
-## 1. Create Supabase project
+### 1. Create Supabase
+Create a Supabase project, open **SQL Editor**, and run `supabase_schema.sql`.
 
-Create a free Supabase project and open its SQL Editor.
-
-Paste and run `supabase_schema.sql`.
-
-## 2. Get credentials
-
-In Supabase, copy your project URL and server/API key.
-
-For Streamlit Cloud, put these in App Settings > Secrets:
+### 2. Add Streamlit Secrets
+In your Streamlit app open **Manage app → Settings → Secrets** and add:
 
 ```toml
 SUPABASE_URL = "https://YOUR_PROJECT.supabase.co"
-SUPABASE_KEY = "YOUR_SUPABASE_SERVER_KEY"
+SUPABASE_KEY = "YOUR_SUPABASE_KEY"
 ```
 
-Never commit your real key to GitHub.
+Do **not** commit the real key to GitHub.
 
-## 3. Run locally
+### 3. Deploy
+Set the main file to:
 
-```bash
-pip install -r requirements.txt
-streamlit run app.py
+```text
+app.py
 ```
 
-## 4. Deploy
+The app installs dependencies from `requirements.txt`.
 
-Push the folder to GitHub and deploy `app.py` with Streamlit Community Cloud.
+## How two friends chat
+1. Person A opens the app and creates a name.
+2. The app displays an 8-character Friend Code.
+3. Person A sends that code to Person B.
+4. Person B creates their own name and enters Person A's code.
+5. Both accounts are connected automatically.
+6. Either person sends a message; the other browser sees it on the next refresh.
 
-Add the two Supabase secrets before running the app.
-
-## Important production note
-
-This project is a simple real-chat prototype. It uses a server-side Supabase key and Friend IDs. For a public production messaging service, add Supabase Auth, Row Level Security policies, user profiles, blocking/reporting, message limits, and proper privacy controls.
+### Important
+This is a lightweight prototype without full user authentication. For a public production messenger, add **Supabase Auth, strict Row Level Security, abuse reporting/blocking, rate limiting, message deletion/privacy controls, and server-side authorization**.
