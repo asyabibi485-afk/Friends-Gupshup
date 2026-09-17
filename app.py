@@ -101,27 +101,37 @@ def update_profile(db_id, name):
 
 
 def user_by_username(username: str):
+    # Case-insensitive exact username lookup.
+    # Do not hide Supabase errors as “username not found”.
     username = clean_username(username)
     if not username:
         return None
-    try:
-        return require_client().table("users").select(
-            "id,friend_id,name,username"
-        ).eq("username", username).maybe_single().execute().data
-    except Exception:
-        return None
+    result = (
+        require_client()
+        .table("users")
+        .select("id,friend_id,name,username")
+        .ilike("username", username)
+        .limit(1)
+        .execute()
+    )
+    rows = result.data or []
+    return rows[0] if rows else None
 
 
 def search_users(username: str):
     username = clean_username(username)
     if len(username) < 2:
         return []
-    try:
-        return require_client().table("users").select(
-            "id,friend_id,name,username"
-        ).ilike("username", f"%{username}%").limit(10).execute().data or []
-    except Exception:
-        return []
+    result = (
+        require_client()
+        .table("users")
+        .select("id,friend_id,name,username")
+        .ilike("username", f"%{username}%")
+        .order("username")
+        .limit(10)
+        .execute()
+    )
+    return result.data or []
 
 
 
@@ -149,9 +159,15 @@ def get_friends(my_db_id):
 
 
 def connect_friend(my_db_id, username):
-    friend = user_by_username(username)
+    username = clean_username(username)
+    if not username:
+        return False, "Enter your friend’s username."
+    try:
+        friend = user_by_username(username)
+    except Exception as e:
+        return False, f"Could not search Supabase: {e}"
     if not friend:
-        return False, "Username not found. Ask your friend for the exact username."
+        return False, f"I can't find @{username}. Your friend must first tap “Start chatting 💕” with that username."
     if int(friend["id"]) == int(my_db_id):
         return False, "You cannot add yourself."
     try:
@@ -343,10 +359,14 @@ if page == "add":
     ).strip().lower()
 
     if username_query:
-        matches = search_users(username_query)
+        try:
+            matches = search_users(username_query)
+        except Exception as e:
+            st.error(f"Supabase search error: {e}")
+            matches = []
         matches = [p for p in matches if int(p["id"]) != int(my_db_id)]
         if not matches:
-            st.info("No matching username found.")
+            st.info("No user found. Ask your friend to open their app, enter their username, and tap Start chatting 💕 first.")
         else:
             for p in matches:
                 c1, c2 = st.columns([3, 1])
