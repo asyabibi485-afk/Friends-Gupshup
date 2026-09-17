@@ -1,45 +1,48 @@
-# 💬 Friend Gup Shup
+# 💬 Friend Gup Shup — Real Chat
 
-A friendly Streamlit chat portal for friends, poetry and personalized AI poetry.
+This version is a real person-to-person chat portal. It does **not** generate AI replies.
 
-## Features
+## What changed
 
-- 🏠 Chat-style Gup Shup portal
-- 👭 Add and view friends
-- ✍️ Urdu, Roman Urdu and English poetry
-- 🤖 Gemini-powered personalized poetry
-- 💕 Built-in fallback poetry when Gemini is unavailable
-- 📱 Responsive Streamlit interface
-- 🚀 GitHub + Streamlit Cloud ready
+- Messages are stored in a shared Supabase database.
+- Your friend can send a message from their own browser/device.
+- You can answer from your browser/device.
+- The chat refreshes automatically every 2 seconds.
+- No fake AI messages are inserted.
+- Friend IDs allow two users to connect in this simple demo.
 
-## Run locally
+## 1. Create Supabase project
+
+Create a free Supabase project and open its SQL Editor.
+
+Paste and run `supabase_schema.sql`.
+
+## 2. Get credentials
+
+In Supabase, copy your project URL and server/API key.
+
+For Streamlit Cloud, put these in App Settings > Secrets:
+
+```toml
+SUPABASE_URL = "https://YOUR_PROJECT.supabase.co"
+SUPABASE_KEY = "YOUR_SUPABASE_SERVER_KEY"
+```
+
+Never commit your real key to GitHub.
+
+## 3. Run locally
 
 ```bash
 pip install -r requirements.txt
 streamlit run app.py
 ```
 
-For Gemini AI, create `.streamlit/secrets.toml`:
+## 4. Deploy
 
-```toml
-GEMINI_API_KEY = "your_key_here"
-```
+Push the folder to GitHub and deploy `app.py` with Streamlit Community Cloud.
 
-The app reads the Streamlit secret and exposes it safely to the backend through the environment.
+Add the two Supabase secrets before running the app.
 
-## Streamlit Cloud
+## Important production note
 
-1. Upload this project to a GitHub repository.
-2. Open Streamlit Community Cloud.
-3. Create a new app and select `app.py`.
-4. Add this secret in the app's Secrets section:
-
-```toml
-GEMINI_API_KEY = "your_key_here"
-```
-
-5. Deploy.
-
-## Important
-
-This is a demo friendship/chat interface. Messages and added friends are stored in the current Streamlit session only; there is no permanent database or real-time multi-user messaging backend.
+This project is a simple real-chat prototype. It uses a server-side Supabase key and Friend IDs. For a public production messaging service, add Supabase Auth, Row Level Security policies, user profiles, blocking/reporting, message limits, and proper privacy controls.

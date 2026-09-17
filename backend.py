@@ -1,73 +1,77 @@
 import os
-import random
+import uuid
+from datetime import datetime, timezone
+import streamlit as st
 
 try:
-    from google import genai
+    from supabase import create_client
 except ImportError:
-    genai = None
+    create_client = None
 
+def _client():
+    if create_client is None:
+        return None
+    url = st.secrets.get("SUPABASE_URL", os.getenv("SUPABASE_URL", ""))
+    key = st.secrets.get("SUPABASE_KEY", os.getenv("SUPABASE_KEY", ""))
+    if not url or not key:
+        return None
+    return create_client(url, key)
 
-def _fallback_poetry(name, language, mood):
-    if language == "Urdu":
-        return (
-            f"{name} کے نام ایک چھوٹی سی نظم 🌸\n\n"
-            "دوستی وہ خوشبو ہے جو فاصلے مٹا دیتی ہے،\n"
-            "ایک مسکراہٹ دل کی دنیا سجا دیتی ہے،\n"
-            "سچے دوست مل جائیں تو زندگی حسین لگتی ہے،\n"
-            "اور ہر گپ شپ ایک خوبصورت یاد بن جاتی ہے۔ 💕"
-        )
-    if language == "Roman Urdu":
-        return (
-            f"{name} ke naam 🌸\n\n"
-            "Dosti woh khushboo hai jo faaslay mita deti hai,\n"
-            "Ek muskurahat dil ki duniya saja deti hai,\n"
-            "Sachay dost mil jayein to zindagi haseen lagti hai,\n"
-            "Aur har gup shup ek khoobsurat yaad ban jati hai. 💕"
-        )
-    return (
-        f"For {name} 🌸\n\n"
-        "A friend is a little light on cloudy days,\n"
-        "A smile that stays in countless ways,\n"
-        "Through every laugh and every memory,\n"
-        "True friendship makes life feel brighter. 💕"
-    )
+def _require():
+    client = _client()
+    if client is None:
+        raise RuntimeError("Supabase is not configured. Add SUPABASE_URL and SUPABASE_KEY in Streamlit Secrets.")
+    return client
 
+def get_or_create_user():
+    if "real_chat_user_id" not in st.session_state:
+        st.session_state.real_chat_user_id = str(uuid.uuid4())
+    return st.session_state.real_chat_user_id
 
-def generate_ai_poetry(name, language, mood):
-    api_key = os.getenv("GEMINI_API_KEY", "").strip()
+def get_friends(user_id):
+    try:
+        c = _require()
+        res = c.table("friendships").select("friend_id,friend_name").eq("user_id", user_id).execute()
+        return [{"friend_id": x["friend_id"], "name": x["friend_name"]} for x in (res.data or [])]
+    except Exception as e:
+        st.error(str(e))
+        return []
 
-    if genai and api_key:
-        try:
-            client = genai.Client(api_key=api_key)
-            prompt = (
-                f"Write a short original {mood.lower()} poem for a friend named {name}. "
-                f"Language: {language}. Keep it warm, respectful, and suitable for a "
-                "friendship chat app. Do not claim medical or factual benefits. "
-                "Use 4-8 short lines and a few tasteful emojis."
-            )
-            response = client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=prompt,
-            )
-            text = getattr(response, "text", None)
-            if text:
-                return text.strip()
-        except Exception:
-            pass
+def add_friend(user_id, friend_id, friend_name):
+    if not friend_id or not friend_name:
+        return False, "Enter both Friend ID and name."
+    if friend_id == user_id:
+        return False, "You cannot add yourself."
+    try:
+        c = _require()
+        c.table("friendships").upsert(
+            {"user_id": user_id, "friend_id": friend_id, "friend_name": friend_name},
+            on_conflict="user_id,friend_id"
+        ).execute()
+        return True, "Friend added."
+    except Exception as e:
+        return False, str(e)
 
-    return _fallback_poetry(name, language, mood)
+def get_messages(user_id, friend_id):
+    try:
+        c = _require()
+        r1 = c.table("messages").select("*").eq("sender_id", user_id).eq("receiver_id", friend_id).execute()
+        r2 = c.table("messages").select("*").eq("sender_id", friend_id).eq("receiver_id", user_id).execute()
+        data = (r1.data or []) + (r2.data or [])
+        return sorted(data, key=lambda x: x.get("created_at", ""))
+    except Exception as e:
+        st.error(str(e))
+        return []
 
-
-def reply_to_message(message):
-    msg = message.lower()
-    if any(word in msg for word in ["salam", "assalam", "hello", "hi"]):
-        return "Wa Alaikum Assalam! 😊 Chalo aaj thori si gup shup aur poetry ho jaye! 🌸"
-    if any(word in msg for word in ["sad", "miss", "yaad"]):
-        return "Aww 💕 dosti mein yaadein hi to sab se khoobsurat hoti hain. Ek poetry bhi bhejte hain!"
-    if any(word in msg for word in ["poetry", "shayari", "poem"]):
-        return "Bilkul! ✍️ Poetry Corner kholte hain—dosti ke naam ek khoobsurat sher! 🌷"
-    return random.choice([
-        "Hahaha 😄 achha! Phir batao, aaj ki sab se interesting baat kya hai?",
-        "Nice! 💕 Friends ke saath choti choti baatein bhi special hoti hain.",
-        "Bilkul! 😊 Gup shup continue rakho.",
-    ])
+def send_message(sender_id, receiver_id, message):
+    try:
+        c = _require()
+        c.table("messages").insert({
+            "sender_id": sender_id,
+            "receiver_id": receiver_id,
+            "message": message,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }).execute()
+        return True, "Sent"
+    except Exception as e:
+        return False, str(e)
