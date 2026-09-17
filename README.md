@@ -1,6 +1,24 @@
-# Friend Gup Shup
+# Friend Gup Shup — EASY CHAT
 
-Simple real friend-to-friend Streamlit chat using Supabase.
+This version removes the visible 8-character Friend Code.
+
+## New flow
+
+1. Create your profile with a username.
+2. Tap **Add friend**.
+3. Search your friend's username.
+4. Tap **Chat**.
+5. The app connects and opens the chat automatically.
+
+Example:
+
+`@ali123` → **Add friend** → **Chat**
+
+## Supabase
+
+Run the updated `supabase_schema.sql` once in the Supabase SQL Editor.
+
+If your project already has `users_select`, the migration safely drops and recreates that policy. It also adds a `username` column and a unique username index.
 
 ## Streamlit Secrets
 
@@ -9,11 +27,8 @@ SUPABASE_URL = "https://YOUR_PROJECT.supabase.co"
 SUPABASE_KEY = "YOUR_PUBLISHABLE_KEY"
 ```
 
-## Existing Supabase tables
+You can also use `SUPABASE_PUBLISHABLE_KEY` or `SUPABASE_ANON_KEY`.
 
-This app matches the user's current schema:
-- `users`: `id`, `friend_id`, `name`, `created_at`
-- `friendships`: `id`, `user_id`, `friend_id`, `created_at`
-- `messages`: `id`, `sender_id`, `receiver_id`, `message`, `created_at`
+## Deploy
 
-No extra SQL is required if those tables, policies, and Realtime are already configured.
+Use `app.py` as the Streamlit entry point.
